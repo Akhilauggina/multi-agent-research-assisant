@@ -55,7 +55,8 @@ All clients, services, tools, and agents are assembled in `app/workflow/containe
 ### 1. Installation
 
 ```bash
-create a folder multi-agent -research-assistant and naviagate to the path cd multi-agent -research-assistant
+create a folder multi-agent -research-assistant and navigate to the path
+cd multi-agent -research-assistant
 pip install -r requirements.txt
 ```
 
