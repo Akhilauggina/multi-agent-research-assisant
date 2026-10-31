@@ -55,7 +55,7 @@ All clients, services, tools, and agents are assembled in `app/workflow/containe
 ### 1. Installation
 
 ```bash
-cd backend
+create a folder multi-agent -research-assistant and naviagate to the path cd multi-agent -research-assistant
 pip install -r requirements.txt
 ```
 
@@ -64,8 +64,7 @@ pip install -r requirements.txt
 Configure `.env`:
 
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4.1
+
 GEMINI_API_KEY=your_gemini_api_key_here
 LOG_LEVEL=INFO
 ```
