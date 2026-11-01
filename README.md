@@ -1,89 +1,330 @@
-# Multi-Agent Research Assistant
+# 🤖 AI Research Assistant
 
-A modular, clean architecture multi-agent research assistant built in Python 3.12+, LangGraph, FastAPI, and Streamlit, adhering to SOLID principles, dependency injection, and clean boundaries.
-
-## Architecture
-
-```
-START ─► PlannerAgent ─► SearchAgent ─► ReaderAgent ─► FactCheckerAgent ─► SummarizerAgent ─► WriterAgent ─► END
-```
-
-### Flow of ResearchState
-
-The application uses one shared Pydantic `ResearchState` container that flows through every LangGraph node:
-* `topic`: User-defined research topic
-* `plan`: Formulated section titles
-* `sections`: Planned research section objects
-* `search_results`: Raw tool outputs per section (`dict[str, list[ToolResult]]`)
-* `read_results`: Cleaned and extracted factual text per section (`dict[str, str]`)
-* `verified_results`: Factually verified information per section (`dict[str, str]`)
-* `final_summary`: Synthesized cross-section plain text summary
-* `report`: Final production-grade report formatted strictly in Markdown
-* `logs`: Structured `LogEntry` records captured via `LoggingService`
-
-### Agents & Services
-
-1. **PlannerAgent** (`app/agents/planner_agent.py`)
-   - Uses `PlanningService` (`app/services/planning_service.py`)
-   - Decomposes the research topic into structured sections.
-2. **SearchAgent** (`app/agents/search_agent.py`)
-   - Uses `SourceSelectionService` and `SearchService` (`app/services/`)
-   - Gathers information across tools registered in `ToolRegistry`.
-3. **ReaderAgent** (`app/agents/reader_agent.py`)
-   - Uses `ReaderService` (`app/services/reader_service.py`)
-   - Cleans and extracts relevant content from `search_results` into `read_results`. Does not summarize or verify facts.
-4. **FactCheckerAgent** (`app/agents/fact_checker_agent.py`)
-   - Uses `FactCheckingService` (`app/services/fact_checking_service.py`)
-   - Checks and retains verified factual assertions into `verified_results`.
-5. **SummarizerAgent** (`app/agents/summarizer_agent.py`)
-   - Uses `SummarizationService` (`app/services/summarization_service.py`)
-   - Consolidates all verified sections into one concise plain-text `final_summary`.
-6. **WriterAgent** (`app/agents/writer_agent.py`)
-   - Uses `WriterService` (`app/services/writer_service.py`)
-   - Authors the final comprehensive Markdown research `report`.
-7. **LoggingService** (`app/services/logging_service.py`)
-   - Decoupled logger injected into all agents. Never mutates `logs` directly from agents.
-
-### Dependency Injection & Workflow
-
-All clients, services, tools, and agents are assembled in `app/workflow/container.py` and orchestrated via `app/workflow/research_workflow.py` using `langgraph.graph.StateGraph`.
+An intelligent **Multi-Agent AI Research Assistant** built using **Python, LangGraph, FastAPI, Streamlit, and Pydantic**. The system automates the research process by planning topics, retrieving information, extracting relevant content, verifying facts, summarizing findings, and generating structured Markdown reports.
 
 ---
 
-## Getting Started
+## Table of Contents
 
-### 1. Installation
+- [Project Description](#project-description)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Dependencies](#dependencies)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+
+---
+
+## Project Description
+
+The AI Research Assistant is a workflow-driven application that leverages **LangGraph** to orchestrate multiple AI agents, each responsible for a specific stage of the research pipeline.
+
+The application follows a modular architecture based on **SOLID principles**, **Dependency Injection**, and a shared **ResearchState** using **Pydantic**.
+
+### Workflow
+
+```
+User Query
+    │
+    ▼
+Planner Agent
+    │
+    ▼
+Search Agent
+    │
+    ▼
+Reader Agent
+    │
+    ▼
+Fact Checker Agent
+    │
+    ▼
+Summarizer Agent
+    │
+    ▼
+Writer Agent
+    │
+    ▼
+Markdown Research Report
+```
+
+LangGraph manages the execution flow while each agent updates a shared state object, making the system scalable, maintainable, and easy to extend.
+
+---
+
+## Features
+
+- Multi-Agent Architecture using LangGraph
+- Intelligent research planning
+- Automated information retrieval
+- Content extraction and processing
+- Fact verification pipeline
+- AI-powered summarization
+- Markdown report generation
+- Shared Pydantic ResearchState
+- Dependency Injection architecture
+- Centralized logging and workflow tracking
+- Modular service-based design
+- Extensible architecture for adding new agents and tools
+
+---
+
+## Project Structure
+
+```
+AI-Research-Assistant/
+│
+├── backend/
+│   ├── agents/
+│   │   ├── planner_agent.py
+│   │   ├── search_agent.py
+│   │   ├── reader_agent.py
+│   │   ├── fact_checker_agent.py
+│   │   ├── summarizer_agent.py
+│   │   └── writer_agent.py
+│   │
+│   ├── services/
+│   │   ├── llm_service.py
+│   │   ├── planning_service.py
+│   │   ├── reader_service.py
+│   │   ├── fact_checker_service.py
+│   │   ├── summarization_service.py
+│   │   ├── writer_service.py
+│   │   └── logging_service.py
+│   │
+│   ├── models/
+│   │   ├── research_state.py
+│   │   ├── enums.py
+│   │   └── log_entry.py
+│   │
+│   ├── tools/
+│   │   ├── tool_manager.py
+│   │   ├── wikipedia_tool.py
+│   │   ├── web_search_tool.py
+│   │   └── arxiv_tool.py
+│   │
+│   ├── workflow/
+│   │   ├── graph.py
+│   │   └── supervisor.py
+│   │
+│   └── api/
+│       └── main.py
+│
+├── frontend/
+│   └── app.py
+│
+├── requirements.txt
+├── README.md
+└── .env
+```
+
+---
+
+## Dependencies
+
+### Backend
+
+- Python 3.12+
+- FastAPI
+- LangGraph
+- LangChain
+- Pydantic v2
+- Uvicorn
+
+### Frontend
+
+- Streamlit
+
+### AI
+
+- OpenAI / Gemini
+- LangChain
+
+### Utilities
+
+- python-dotenv
+- requests
+- beautifulsoup4
+- markdown
+
+---
+
+## Installation
+
+Clone the repository
 
 ```bash
-create a folder multi-agent -research-assistant and navigate to the path
-cd multi-agent -research-assistant
+git clone https://github.com/yourusername/ai-research-assistant.git
+```
+
+Navigate to the project directory
+
+```bash
+cd ai-research-assistant
+```
+
+Create a virtual environment
+
+```bash
+python -m venv venv
+```
+
+Activate the environment
+
+Windows
+
+```bash
+venv\Scripts\activate
+```
+
+Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configuration
+---
 
-Configure `.env`:
+## Configuration
+
+Create a `.env` file in the project root.
+
+Example:
 
 ```env
-
-GEMINI_API_KEY=your_gemini_api_key_here
-LOG_LEVEL=INFO
+OPENAI_API_KEY=your_api_key
+GOOGLE_API_KEY=your_api_key
+MODEL_NAME=gpt-4o-mini
 ```
 
-### 3. Execution Options
+Update any additional environment variables required for external tools or APIs.
 
-#### Run via CLI Pipeline:
+---
+
+## Usage
+
+### Start the FastAPI backend
+
 ```bash
-python -m app.main
+uvicorn backend.api.main:app --reload
 ```
 
-#### Run FastAPI REST Backend:
-```bash
-uvicorn app.api.server:app --reload --port 8000
-```
-Interactive OpenAPI documentation will be available at `http://localhost:8000/docs`.
+### Start the Streamlit frontend
 
-#### Run Streamlit Web Application:
 ```bash
-streamlit run app/app.py
+streamlit run frontend/app.py
 ```
+
+Open the Streamlit application in your browser.
+
+Enter a research topic such as:
+
+```
+Artificial Intelligence in Healthcare
+```
+
+The system will automatically:
+
+1. Generate a research plan.
+2. Search relevant sources.
+3. Extract useful information.
+4. Verify facts.
+5. Summarize findings.
+6. Generate a Markdown report.
+
+---
+
+## API Documentation
+
+After running the backend, access the interactive API documentation:
+
+### Swagger UI
+
+```
+http://localhost:8000/docs
+```
+
+### ReDoc
+
+```
+http://localhost:8000/redoc
+```
+
+Example API endpoint
+
+```
+POST /research
+```
+
+Request
+
+```json
+{
+  "topic": "Artificial Intelligence"
+}
+```
+
+Response
+
+```json
+{
+  "status": "completed",
+  "report": "Generated Markdown Report"
+}
+```
+
+---
+
+## Contributing
+
+Contributions are welcome!
+
+1. Fork the repository.
+2. Create a new feature branch.
+
+```bash
+git checkout -b feature/new-feature
+```
+
+3. Commit your changes.
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push your branch.
+
+```bash
+git push origin feature/new-feature
+```
+
+5. Create a Pull Request.
+
+---
+
+## Future Enhancements
+
+- Parallel execution of search tasks
+- Human-in-the-loop approval
+- Multi-LLM support
+- PDF and DOCX report generation
+- Citation management
+- Persistent checkpoints
+- Vector database integration (ChromaDB/FAISS)
+- RAG-based document retrieval
+- Multi-language research support
+
+---
+
+## License
+
+This project is licensed under the MIT License.
